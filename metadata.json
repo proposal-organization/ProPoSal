@@ -1,0 +1,6 @@
+{
+  "name": "ProPoSal - Digital Suggestion Box",
+  "description": "A digital suggestion box for schools with anonymous posting, real-name voting, and transparent process visualization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta name="cross-origin-opener-policy" content="same-origin-allow-popups">
+    
+    <title>ProPoSal - デジタル目安箱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#6a0dad',
+                            dark: '#4a0a77',
+                            light: '#9d46ff',
+                            bg: '#f3e5f5' 
+                        },
+                        accent: '#ffd700',
+                        bg: {
+                            body: '#f8f5fa',
+                            dark: '#121212',
+                            card: '#ffffff',
+                            cardDark: '#1e1e1e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Helvetica Neue"', 'Arial', '"Hiragino Kaku Gothic ProN"', '"Hiragino Sans"', 'Meiryo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #333; }
+        .material-icons-round { vertical-align: middle; }
+        @keyframes gradient-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+            background: linear-gradient(-45deg, #6a0dad, #9d46ff, #4a0a77);
+            background-size: 400% 400%;
+            animation: gradient-bg 15s ease infinite;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
+    "@react-oauth/google": "https://esm.sh/@react-oauth/google@^0.12.1",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-bg-body dark:bg-bg-dark text-[#333] dark:text-[#e0e0e0] transition-colors duration-300">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

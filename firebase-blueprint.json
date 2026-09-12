@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile in the school suggestion box platform",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email", "description": "School email (@toda-ed.jp)" },
+        "name": { "type": "string", "description": "Full name or display name" },
+        "photoURL": { "type": "string", "description": "Google avatar URL" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin"], "description": "User role" },
+        "class": { "type": "string", "description": "School grade/class (e.g. 2年3組)" },
+        "isApproved": { "type": "boolean", "description": "Approval status by student council" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Registration date" },
+        "lastLoginAt": { "type": "string", "format": "date-time", "description": "Last sign-in date" }
+      },
+      "required": ["uid", "email", "name", "role", "isApproved"]
+    },
+    "Proposal": {
+      "title": "Proposal",
+      "description": "Suggestion or proposal submitted to the school suggestion box",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Proposal document ID" },
+        "title": { "type": "string", "description": "Proposal title" },
+        "content": { "type": "string", "description": "Proposal details/content" },
+        "category": { "type": "string", "enum": ["校則", "設備・環境", "授業", "その他"], "description": "Category" },
+        "status": { "type": "string", "enum": ["受付中", "検討中", "先生と調整中", "対応済"], "description": "Processing status" },
+        "adminResponse": { "type": "string", "description": "Official reply from student council / school" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Creation timestamp ISO" },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "userName": { "type": "string" },
+              "userEmail": { "type": "string" },
+              "timestamp": { "type": "string" }
+            },
+            "required": ["userId", "userName", "timestamp"]
+          }
+        },
+        "authorId": { "type": "string", "description": "Author UID" },
+        "authorName": { "type": "string", "description": "Author full name for internal audit" },
+        "authorEmail": { "type": "string", "description": "Author email" }
+      },
+      "required": ["title", "content", "category", "status", "timestamp", "signatures"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles indexed by Auth UID"
+    },
+    "/proposals/{proposalId}": {
+      "schema": "Proposal",
+      "description": "School improvement proposals and signatures"
+    }
+  }
+}

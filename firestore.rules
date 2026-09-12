@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 認証チェック
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 生徒会管理者チェック (13250076@toda-ed.jp)
+    function isAdmin() {
+      return isSignedIn() && 
+        request.auth.token.email != null && 
+        request.auth.token.email == '13250076@toda-ed.jp';
+    }
+
+    // 学校ユーザーまたは管理者
+    function isSchoolUser() {
+      return isSignedIn() && (
+        isAdmin() || 
+        (request.auth.token.email != null && request.auth.token.email.matches('.*@toda-ed[.]jp$'))
+      );
+    }
+
+    // ユーザー本人チェック
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Users コレクション
+    match /users/{userId} {
+      // メンバー表示・署名者確認のためサインイン済みユーザーに読み取り許可
+      allow read: if isSignedIn();
+
+      // 新規作成: @toda-ed.jp の本人アカウントのみ。一般ユーザーが自身を admin や承認済みに偽装することを禁止
+      allow create: if isSchoolUser() && (
+        isAdmin() || 
+        (
+          isOwner(userId) && 
+          request.resource.data.role != 'admin' &&
+          request.resource.data.isApproved == false &&
+          request.resource.data.uid == userId &&
+          request.resource.data.email == request.auth.token.email
+        )
+      );
+
+      // 更新: 
+      // 管理者は全項目更新可能 (承認状態 isApproved, ロール変更など)
+      // 一般生徒は自身のプロフィールの更新のみ可能（権限昇格 role や承認 isApproved の改ざんを確実に禁止）
+      allow update: if isSchoolUser() && (
+        isAdmin() || 
+        (
+          isOwner(userId) &&
+          (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isApproved']) ||
+            (request.resource.data.role == resource.data.role && request.resource.data.isApproved == resource.data.isApproved)
+          )
+        )
+      );
+
+      // 削除: 管理者のみ
+      allow delete: if isAdmin();
+    }
+
+    // Proposals (意見) コレクション
+    match /proposals/{proposalId} {
+      // 全校生徒・教職員に閲覧を許可
+      allow read: if true;
+
+      // 新規投稿: @toda-ed.jp ドメインユーザーのみ
+      // - 投稿者本人のUIDと一致
+      // - 投稿者メールアドレスが認証トークンと一致
+      // - タイトル・本文の長さ検証
+      // - 管理者以外が生徒会回答(adminResponse)を不正に書き込むことを防止
+      allow create: if isSchoolUser() && (
+        isAdmin() ||
+        (
+          request.resource.data.authorId == request.auth.uid &&
+          request.resource.data.authorEmail == request.auth.token.email &&
+          request.resource.data.title is string &&
+          request.resource.data.title.size() > 0 &&
+          request.resource.data.title.size() <= 150 &&
+          request.resource.data.content is string &&
+          request.resource.data.content.size() > 0 &&
+          request.resource.data.content.size() <= 5000 &&
+          (!('adminResponse' in request.resource.data) || request.resource.data.adminResponse == '')
+        )
+      );
+
+      // 更新:
+      // 1. 管理者はステータス変更や生徒会公式回答の書き込みなど全項目を更新可能
+      // 2. 一般生徒は「賛同署名 (signatures)」の更新のみ許可（タイトル・本文・ステータス・生徒会回答の改ざんを完全に防止）
+      allow update: if isSchoolUser() && (
+        isAdmin() || 
+        (
+          request.resource.data.title == resource.data.title &&
+          request.resource.data.content == resource.data.content &&
+          request.resource.data.authorId == resource.data.authorId &&
+          request.resource.data.authorEmail == resource.data.authorEmail &&
+          request.resource.data.category == resource.data.category &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.adminResponse == resource.data.adminResponse
+        )
+      );
+
+      // 削除: 管理者、または自分が投稿した意見のみ可能
+      allow delete: if isSchoolUser() && (
+        isAdmin() || 
+        (resource.data.authorId == request.auth.uid)
+      );
+    }
+  }
+}
+
